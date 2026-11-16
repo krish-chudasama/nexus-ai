@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+data/uploads/*
+data/chroma/*
+data/*.json
+evals/results/*
+!data/uploads/.gitkeep
+!data/chroma/.gitkeep
+!evals/results/.gitkeep
