@@ -125,3 +125,23 @@ class TestDocumentService:
         services.documents.ingest("a.txt", b"persist me please")
         again = build_services(settings, HashingEmbedder())
         assert len(again.documents.list().documents) == 1
+
+    def test_registry_creates_parent_directory(self, tmp_path):
+        from app.schemas.models import DocumentInfo
+        from app.services.registry import DocumentRegistry
+
+        deep_path = tmp_path / "deep" / "nested" / "docs.json"
+        reg = DocumentRegistry(deep_path)
+        doc = DocumentInfo(
+            id="doc1",
+            filename="a.txt",
+            file_type="txt",
+            size_bytes=10,
+            sha256="abc",
+            num_chunks=1,
+            num_chars=10,
+            uploaded_at="2026-11-16T00:00:00Z",
+        )
+        reg.add(doc)
+        assert deep_path.exists()
+        assert reg.get("doc1") is not None

@@ -28,7 +28,9 @@ def api(tmp_path, monkeypatch):
     monkeypatch.setattr(deps, "get_settings", lambda: settings)
     app = create_app()
     app.dependency_overrides[deps.services_dep] = lambda: svc
-    return TestClient(app), svc
+    yield TestClient(app), svc
+    if hasattr(svc, "store") and hasattr(svc.store, "close"):
+        svc.store.close()
 
 
 def _upload(client, name="product_faq.md"):

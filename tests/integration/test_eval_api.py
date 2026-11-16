@@ -28,7 +28,9 @@ def client(tmp_path):
     svc = build_services(settings, HashingEmbedder())
     app = create_app()
     app.dependency_overrides[deps.services_dep] = lambda: svc
-    return TestClient(app)
+    yield TestClient(app)
+    if hasattr(svc, "store") and hasattr(svc.store, "close"):
+        svc.store.close()
 
 
 def _wait(client, run_id, timeout=30):

@@ -95,3 +95,20 @@ class ChromaStore:
 
     def count_for(self, doc_id: str) -> int:
         return len(self._col.get(where={"doc_id": doc_id}, include=[])["ids"])
+
+    def close(self) -> None:
+        """Release open file handles and stop client subsystems."""
+        if hasattr(self, "_client") and self._client is not None:
+            try:
+                if hasattr(self._client, "close"):
+                    self._client.close()
+                elif hasattr(self._client, "_system") and hasattr(self._client._system, "stop"):
+                    self._client._system.stop()
+            except Exception:
+                pass
+            finally:
+                self._col = None
+                self._client = None
+                import gc
+
+                gc.collect()

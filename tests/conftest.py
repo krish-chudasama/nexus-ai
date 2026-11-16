@@ -59,8 +59,11 @@ def settings(tmp_path: Path) -> Settings:
 
 
 @pytest.fixture
-def services(settings: Settings) -> Services:
-    return build_services(settings, HashingEmbedder())
+def services(settings: Settings) -> Iterator[Services]:
+    svc = build_services(settings, HashingEmbedder())
+    yield svc
+    if hasattr(svc, "store") and hasattr(svc.store, "close"):
+        svc.store.close()
 
 
 @pytest.fixture

@@ -103,13 +103,22 @@ class EvalRunner:
             None if existing_index else (corpus or self.settings.evals_dir / "datasets" / "corpus")
         )
 
-        with tempfile.TemporaryDirectory(prefix="nexus-eval-") as tmp:
-            svc, n_docs = self._build_services(corpus_dir, Path(tmp))
-            if n_docs == 0:
-                raise NexusError("No documents are indexed; nothing to evaluate against.")
-            results = [self._run_case(svc, c, use_llm, use_judge, top_k, rerank) for c in cases]
-            embedder_name = svc.embedder.name
-            del svc
+        with tempfile.TemporaryDirectory(prefix="nexus-eval-", ignore_cleanup_errors=True) as tmp:
+            svc = None
+            try:
+                svc, n_docs = self._build_services(corpus_dir, Path(tmp))
+                if n_docs == 0:
+                    raise NexusError("No documents are indexed; nothing to evaluate against.")
+                results = [self._run_case(svc, c, use_llm, use_judge, top_k, rerank) for c in cases]
+                embedder_name = svc.embedder.name
+            finally:
+                if svc is not None:
+                    if hasattr(svc, "store") and hasattr(svc.store, "close"):
+                        svc.store.close()
+                    del svc
+                import gc
+
+                gc.collect()
 
         summary = self._summarize(results, use_llm, use_judge)
         s = self.settings

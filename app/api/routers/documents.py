@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import anyio
 from fastapi import APIRouter, Depends, File, UploadFile
 
 from app.api.deps import require_api_key, services_dep
@@ -20,7 +21,7 @@ async def upload_document(
         raise FileTooLarge(f"File exceeds the {svc.settings.max_upload_mb} MB limit.")
     if not file.filename:
         raise ValidationFailed("A filename is required.")
-    info = svc.documents.ingest(file.filename, data)  # CPU-bound; sync on purpose below
+    info = await anyio.to_thread.run_sync(svc.documents.ingest, file.filename, data)
     return UploadResponse(document=info, message=f"Indexed {info.num_chunks} chunks")
 
 

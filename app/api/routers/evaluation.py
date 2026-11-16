@@ -46,10 +46,10 @@ def _execute(job_id: str, svc: Services, req: EvalRunRequest, dataset: Path) -> 
         status = EvalStatus(run_id=job_id, status="completed", summary=report["summary"])
     except NexusError as exc:
         status = EvalStatus(run_id=job_id, status="failed", error=str(exc))
-    except Exception:
+    except Exception as exc:
         log.error("eval_job_crashed", exc_info=True)
         status = EvalStatus(
-            run_id=job_id, status="failed", error="Evaluation crashed unexpectedly."
+            run_id=job_id, status="failed", error=f"Evaluation crashed: {type(exc).__name__}: {exc}"
         )
     with _lock:
         _jobs[job_id] = status

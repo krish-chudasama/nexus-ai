@@ -1,15 +1,21 @@
 .PHONY: install install-ml api ui mcp test lint format eval eval-llm docker-up docker-down
 
-PY ?= .venv/bin/python
+ifeq ($(OS),Windows_NT)
+  PY ?= .venv/Scripts/python.exe
+  PYTHON ?= python
+else
+  PY ?= .venv/bin/python
+  PYTHON ?= python3
+endif
 
 install:            ## core + UI + dev deps (offline hashing embedder works without ML extra)
-	python3 -m venv .venv && $(PY) -m pip install -U pip && $(PY) -m pip install -e ".[ui,dev]"
+	$(PYTHON) -m venv .venv && $(PY) -m pip install -U pip && $(PY) -m pip install -e ".[ui,dev]"
 
 install-ml:         ## semantic embeddings + cross-encoder reranker (downloads PyTorch)
 	$(PY) -m pip install -e ".[ml]"
 
 api:                ## FastAPI backend on :8000
-	$(PY) -m uvicorn app.api.main:app --host $${API_HOST:-127.0.0.1} --port $${API_PORT:-8000}
+	$(PY) -m uvicorn app.api.main:app --host 127.0.0.1 --port 8000
 
 ui:                 ## Streamlit frontend on :8501
 	$(PY) -m streamlit run app/frontend/app.py

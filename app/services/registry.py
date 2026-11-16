@@ -42,6 +42,7 @@ class DocumentRegistry:
             self._docs = {}
 
     def _save(self) -> None:
+        self._path.parent.mkdir(parents=True, exist_ok=True)
         tmp = self._path.with_suffix(".tmp")
         tmp.write_text(
             json.dumps([d.model_dump() for d in self._docs.values()], indent=2), encoding="utf-8"

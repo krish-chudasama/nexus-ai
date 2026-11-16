@@ -41,6 +41,19 @@ class TestRetrieval:
         chunks, debug = services.retriever.retrieve("anything")
         assert chunks == [] and debug.candidates == 0
 
+    def test_chroma_store_close_releases_resources(self, tmp_path):
+        import shutil
+
+        from app.vectorstore.chroma_store import ChromaStore, StoredChunk
+
+        store_dir = tmp_path / "test_chroma"
+        store = ChromaStore(store_dir)
+        store.add([StoredChunk("c1", "d1", "test.txt", 0, "sample text", None, [0.1] * 512)])
+        assert store.count() == 1
+        store.close()
+        shutil.rmtree(store_dir, ignore_errors=False)
+        assert not store_dir.exists()
+
 
 def test_lexical_reranker_prefers_term_coverage():
     a = _chunk(0, "unrelated filler words", score=0.50)
