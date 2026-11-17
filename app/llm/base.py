@@ -16,6 +16,7 @@ class ToolCall:
     name: str
     arguments: dict[str, Any]
     raw_arguments: str = ""
+    extra_content: dict[str, Any] | None = None
 
 
 @dataclass

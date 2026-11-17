@@ -66,8 +66,15 @@ class OpenAICompatibleClient(LLMClient):
                     raise ValueError("arguments must be an object")
             except ValueError:
                 args = {"__invalid_json__": raw[:200]}
+            extra = getattr(tc, "extra_content", None)
             calls.append(
-                ToolCall(id=tc.id, name=tc.function.name, arguments=args, raw_arguments=raw)
+                ToolCall(
+                    id=tc.id,
+                    name=tc.function.name,
+                    arguments=args,
+                    raw_arguments=raw,
+                    extra_content=extra,
+                )
             )
         usage = None
         if resp.usage:

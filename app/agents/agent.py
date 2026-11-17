@@ -93,21 +93,25 @@ class Agent:
                 break
 
             calls = resp.tool_calls[:MAX_TOOL_CALLS_PER_TURN]
+            tool_call_dicts = []
+            for c in calls:
+                tc_dict = {
+                    "id": c.id,
+                    "type": "function",
+                    "function": {
+                        "name": c.name,
+                        "arguments": c.raw_arguments or json.dumps(c.arguments),
+                    },
+                }
+                if getattr(c, "extra_content", None):
+                    tc_dict["extra_content"] = c.extra_content
+                tool_call_dicts.append(tc_dict)
+
             messages.append(
                 {
                     "role": "assistant",
                     "content": resp.content or None,
-                    "tool_calls": [
-                        {
-                            "id": c.id,
-                            "type": "function",
-                            "function": {
-                                "name": c.name,
-                                "arguments": c.raw_arguments or json.dumps(c.arguments),
-                            },
-                        }
-                        for c in calls
-                    ],
+                    "tool_calls": tool_call_dicts,
                 }
             )
             for call in calls:
